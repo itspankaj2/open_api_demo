@@ -40,6 +40,7 @@ async fn main() {
 
     let app = axum::Router::new()
         .route("/", get(hello))
+        .route("/upload", get(open_api_demo::users0::api::upload_to_minio))
         .route("/pets/:id", get(pet::api::get_pet_by_id))
         .route("/api/register", post(open_api_demo::users0::api::register))
         .with_state(pool)
