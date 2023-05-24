@@ -1,12 +1,10 @@
 use axum::{
     extract::Path,
     response::{IntoResponse, Response},
-    Json,
 };
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::schema0;
 #[derive(ToSchema, Serialize, Deserialize)]
 pub struct Pet {
     pub id: u64,
@@ -38,17 +36,17 @@ pub async fn get_pet_by_id(Path(id): Path<u64>) -> Response {
     }
 }
 
-#[utoipa::path(
-    get,
-    path = "/schema/{name}",
-    responses(
-        (status = 200, description = "Pet found successfully", body = schema::object::Object),
-        (status = NOT_FOUND, description = "Pet was not found")
-    ),
-    params(
-        ("name" = String, Path, description = "Pet database id to get Pet for"),
-    )
-)]
-pub async fn get_pet_object(Path(name): Path<String>) -> Response {
-    Json(schema0::object::Object::new(&name)).into_response()
-}
+// #[utoipa::path(
+//     get,
+//     path = "/schema/{name}",
+//     responses(
+//         (status = 200, description = "Pet found successfully", body = schema::object::Object),
+//         (status = NOT_FOUND, description = "Pet was not found")
+//     ),
+//     params(
+//         ("name" = String, Path, description = "Pet database id to get Pet for"),
+//     )
+// )]
+// pub async fn get_pet_object(Path(name): Path<String>) -> Response {
+//     Json(schema0::object::Object::new(&name)).into_response()
+// }

@@ -1,49 +1,43 @@
-use diesel::{ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl};
-
-use crate::{
-    models::{NewUser, User},
-    schema,
+use axum::{
+    extract::{self, State},
+    response::Response,
 };
 
-pub fn create_user<'a>(
-    _conn: &mut PgConnection,
-    name1: &'a str,
-    email1: &'a str,
-    password1: &'a str,
-) -> Result<User, diesel::result::Error> {
-    let new_user = NewUser {
-        name: name1,
-        email: email1,
-        password: password1,
-    };
+use crate::{models::User, users0::controller};
 
-    use schema::users;
-    let x = diesel::insert_into(users::table)
-        .values(&new_user)
-        .get_result(_conn);
-    return x;
+async fn login() -> Response {
+    todo!()
 }
 
-fn read_users(conn: &mut PgConnection) -> Result<Vec<User>, diesel::result::Error> {
-    use schema::users::dsl::*;
-
-    users.limit(10).load::<User>(conn)
+async fn logout() -> Response {
+    todo!()
 }
 
-fn update_user(
-    conn: &mut PgConnection,
-    user_id: i32,
-    new_name: &str,
-) -> Result<usize, diesel::result::Error> {
-    use schema::users::dsl::*;
+#[utoipa::path(
+    post,
+    path = "/api/register",
+    request_body(content = open_api_demo::models::NewUser, description = "User to register", content_type = "application/json"),
+    responses(
+        (status = 200, description = "User Registered successfully", body = open_api_demo::models::User, content_type = "application/json" ),
+        (status = 401, description = "Body format is not correct"),
+        (status = NOT_MODIFIED, description = "Email Already exsit")
+    )
+)]
+pub async fn register(
+    State(pool): State<crate::POOL>,
+    extract::Json(payload): extract::Json<crate::models::NewUser>,
+) -> Response {
+    let mut conn = pool.get().unwrap();
 
-    diesel::update(users.find(user_id))
-        .set(name.eq(new_name))
-        .execute(conn)
-}
+    let result =
+        super::model::create_user(&mut conn, payload.name, payload.email, payload.password);
 
-fn delete_user(conn: &mut PgConnection, user_id: i32) -> Result<usize, diesel::result::Error> {
-    use schema::users::dsl::*;
+    match result {
+        Ok(user) => controller::success_registration(user),
+        Err(diesel::result::Error::DatabaseError(error_kind, _)) => {
+            controller::db_known_error_registration(error_kind)
+        }
 
-    diesel::delete(users.find(user_id)).execute(conn)
+        Err(_) => controller::db_unknown_error_registration(),
+    }
 }

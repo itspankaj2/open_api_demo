@@ -1,6 +1,9 @@
+use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
+
 use super::schema::users;
 
-#[derive(Debug, diesel::Queryable)]
+#[derive(Debug, ToSchema, diesel::Queryable, Serialize, Deserialize)]
 pub struct User {
     pub userid: i32,
     pub name: String,
@@ -10,10 +13,10 @@ pub struct User {
     pub location: Option<String>,
 }
 
-#[derive(diesel::Insertable)]
+#[derive(diesel::Insertable, ToSchema, Serialize, Deserialize)]
 #[diesel(table_name = users)]
-pub struct NewUser<'a> {
-    pub name: &'a str,
-    pub email: &'a str,
-    pub password: &'a str,
+pub struct NewUser {
+    pub name: String,
+    pub email: String,
+    pub password: String,
 }
